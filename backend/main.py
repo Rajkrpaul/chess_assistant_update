@@ -33,7 +33,7 @@ _cors_origins = ["*"] if _allowed_origin == "*" else [_allowed_origin, "http://l
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=_cors_origins,
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
