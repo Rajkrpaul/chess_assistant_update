@@ -168,6 +168,8 @@ class AIService:
     def __init__(self):
         DEFAULT_PATHS = [
             os.getenv("STOCKFISH_PATH", ""),
+            "/usr/bin/stockfish",
+            "/usr/games/stockfish",
             "./stockfish",
             "/opt/render/project/src/backend/stockfish",
             "backend/stockfish",
