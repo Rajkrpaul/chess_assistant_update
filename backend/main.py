@@ -291,3 +291,26 @@ if __name__ == "__main__":
         reload=True,
         loop="asyncio" if sys.platform == "win32" else "auto",
     )
+    #debug
+    import subprocess
+@app.get("/debug-stockfish")
+async def debug_stockfish():
+    results = {}
+    # Check common paths
+    for path in ["/usr/bin/stockfish", "/usr/games/stockfish", "./stockfish_bin", "/opt/render/project/src/stockfish_bin"]:
+        results[path] = os.path.isfile(path)
+    # Try which command
+    try:
+        r = subprocess.run(["which", "stockfish"], capture_output=True, text=True, timeout=5)
+        results["which"] = r.stdout.strip()
+    except Exception as e:
+        results["which"] = str(e)
+    # Try find command
+    try:
+        r = subprocess.run(["find", "/opt/render", "-name", "stockfish*", "-type", "f"], capture_output=True, text=True, timeout=10)
+        results["find_render"] = r.stdout.strip()
+    except Exception as e:
+        results["find_render"] = str(e)
+    # Show current env var
+    results["STOCKFISH_PATH_env"] = os.getenv("STOCKFISH_PATH", "not set")
+    return results
