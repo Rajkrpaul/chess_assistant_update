@@ -1,0 +1,30 @@
+services:
+  # ── Backend (FastAPI + Stockfish via Ubuntu apt) ───────────────────────────
+  - type: web
+    name: chess-assistant-backend
+    runtime: python
+    rootDir: backend
+    buildCommand: apt-get install -y stockfish && pip install -r requirements.txt
+    startCommand: uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: STOCKFISH_PATH
+        value: /usr/games/stockfish
+      - key: ALLOWED_ORIGIN
+        value: https://chess-assistant-frontend.onrender.com
+    healthCheckPath: /health
+
+  # ── Frontend (Next.js) ─────────────────────────────────────────────────────
+  - type: web
+    name: chess-assistant-frontend
+    runtime: node
+    rootDir: frontend
+    buildCommand: npm ci && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20"
+      - key: NEXT_PUBLIC_API_URL
+        value: https://chess-assistant-backend.onrender.com
+      - key: GROQ_API_KEY
+        sync: false
+    healthCheckPath: /
