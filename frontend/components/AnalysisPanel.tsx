@@ -145,7 +145,7 @@ export default function AnalysisPanel({ result, isLoading, error }: AnalysisPane
           <span className="move-badge" style={{ fontSize: "1.2rem" }}>
             {result.best_move}
           </span>
-          <EvalBadge evaluation={result.evaluation} />
+          <EvalBadge evaluation={result.evaluation != null ? String(result.evaluation) : ""} />
           {result.mate_in && (
             <span
               style={{
