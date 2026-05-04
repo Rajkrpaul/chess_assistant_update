@@ -291,7 +291,7 @@ export default function ChallengeMode() {
                 </div>
               ))}
               
-              {challenge && hintIndex < challenge.hints.length && (
+              {challenge && hintIndex < (challenge.hints || []).length && (
                 <button onClick={showNextHint} style={{ padding: "10px", background: "transparent", border: `1px dashed ${config.glassBorder}`, borderRadius: "8px", color: config.textSecondary, cursor: "pointer", fontSize: "0.85rem", marginTop: "8px", transition: "all 0.2s" }} onMouseOver={e => e.currentTarget.style.background = `${config.textSecondary}15`} onMouseOut={e => e.currentTarget.style.background = "transparent"}>
                   + Reveal Next Hint
                 </button>
