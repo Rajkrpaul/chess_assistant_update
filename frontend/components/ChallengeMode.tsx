@@ -285,7 +285,7 @@ export default function ChallengeMode() {
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {challenge && challenge.hints.slice(0, hintIndex).map((hint, i) => (
+              {challenge && (challenge.hints || []).slice(0, hintIndex).map((hint, i) => (
                 <div key={i} style={{ background: `${config.textSecondary}15`, padding: "10px 12px", borderRadius: "8px", fontSize: "0.85rem", color: config.textPrimary, borderLeft: `3px solid ${config.accentSecondary}` }}>
                   💡 {hint}
                 </div>
