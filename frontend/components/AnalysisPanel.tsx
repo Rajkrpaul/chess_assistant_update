@@ -208,7 +208,7 @@ export default function AnalysisPanel({ result, isLoading, error }: AnalysisPane
                 >
                   {mv.move}
                 </span>
-                <EvalBadge evaluation={mv.evaluation} />
+                <EvalBadge evaluation={mv.evaluation != null ? String(mv.evaluation) : ""} />
               </div>
             ))}
           </div>
