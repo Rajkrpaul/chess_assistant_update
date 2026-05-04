@@ -35,7 +35,7 @@ export default function HistoryPanel({ onClose, onLoadPosition }: Props) {
   const [freshAnalysis, setFreshAnalysis] = useState<GameAnalysisResponse | null>(null);
 
   useEffect(() => {
-    getHistory().then(setGames).catch(() => {}).finally(() => setLoading(false));
+    getHistory().then(setGames).catch(() => { }).finally(() => setLoading(false));
   }, []);
 
   /** Build FEN list from PGN for read-only replay. */
@@ -45,7 +45,7 @@ export default function HistoryPanel({ onClose, onLoadPosition }: Props) {
       const chess = new Chess();
       // Strip PGN headers
       const moveText = pgn.replace(/\[.*?\]\s*/g, "").trim();
-      const tokens = moveText.split(/\s+/).filter(t => !/^\d+\./.test(t) && !["1-0","0-1","1/2-1/2","*"].includes(t));
+      const tokens = moveText.split(/\s+/).filter(t => !/^\d+\./.test(t) && !["1-0", "0-1", "1/2-1/2", "*"].includes(t));
       fens.push(chess.fen());
       for (const san of tokens) {
         chess.move(san);
@@ -64,7 +64,7 @@ export default function HistoryPanel({ onClose, onLoadPosition }: Props) {
     try {
       const chess = new Chess();
       const moveText = selectedGame.pgn.replace(/\[.*?\]\s*/g, "").trim();
-      const tokens = moveText.split(/\s+/).filter((t) => !/^\d+\./.test(t) && !["1-0","0-1","1/2-1/2","*"].includes(t));
+      const tokens = moveText.split(/\s+/).filter((t) => !/^\d+\./.test(t) && !["1-0", "0-1", "1/2-1/2", "*"].includes(t));
       fens.push(chess.fen());
       for (const san of tokens) { chess.move(san); fens.push(chess.fen()); }
     } catch { }
@@ -171,7 +171,7 @@ export default function HistoryPanel({ onClose, onLoadPosition }: Props) {
                 </span>
               </div>
               <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
-                <span style={{ fontSize: "0.65rem", color: config.textSecondary }}>{formatDate(g.date)}</span>
+                <span style={{ fontSize: "0.65rem", color: config.textSecondary }}>{formatDate(g.date || g.created_at)}</span>
                 {g.summary && (
                   <>
                     <span style={{ fontSize: "0.65rem", color: "#F0F6FF" }}>♙ {g.summary.accuracy_white.toFixed(0)}%</span>
