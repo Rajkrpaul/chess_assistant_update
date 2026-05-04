@@ -281,7 +281,7 @@ export default function ChallengeMode() {
 
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "24px", marginBottom: "8px" }}>
               <h4 style={{ margin: 0, fontSize: "1rem", color: config.textPrimary }}>Hints</h4>
-              <span style={{ fontSize: "0.75rem", color: config.textSecondary }}>{hintIndex} / {challenge?.hints.length || 0}</span>
+              <span style={{ fontSize: "0.75rem", color: config.textSecondary }}>{hintIndex} / {(challenge?.hints || []).length || 0}</span>
             </div>
 
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
