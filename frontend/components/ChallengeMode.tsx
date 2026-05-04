@@ -176,7 +176,7 @@ export default function ChallengeMode() {
   };
 
   const showNextHint = () => {
-    if (challenge && hintIndex < challenge.hints.length) {
+    if (challenge && hintIndex < (challenge.hints || []).length) {
       setHintIndex(i => i + 1);
     }
   };
