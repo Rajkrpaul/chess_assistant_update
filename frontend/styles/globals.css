@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -13,6 +13,10 @@
   --amber: #D4870A;
   --cream: #E8DCC8;
   --shadow: #0D0A07;
+  --accent-gold: #D4AF37;
+  --accent-cyan: #00D4FF;
+  --accent-green: #22C55E;
+  --accent-red: #EF4444;
 }
 
 * {
@@ -26,7 +30,7 @@ html {
 body {
   background-color: var(--shadow);
   color: var(--ivory);
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'DM Sans', 'Inter', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
 }
@@ -58,7 +62,105 @@ body::after {
   z-index: 1;
 }
 
-/* Board glow effect */
+/* ── Coach Avatar Animations ─────────────────────────────────────────────── */
+
+@keyframes coachBreathing {
+  0%, 100% { box-shadow: 0 0 16px rgba(212,175,55,0.25), 0 0 32px rgba(212,175,55,0.1); }
+  50%       { box-shadow: 0 0 24px rgba(212,175,55,0.45), 0 0 48px rgba(212,175,55,0.2); }
+}
+
+@keyframes coachThinking {
+  0%, 100% { box-shadow: 0 0 12px rgba(99,102,241,0.3), 0 0 32px rgba(99,102,241,0.15); }
+  50%       { box-shadow: 0 0 28px rgba(99,102,241,0.7), 0 0 56px rgba(99,102,241,0.35); }
+}
+
+@keyframes coachImpressed {
+  0%   { box-shadow: 0 0 12px rgba(212,175,55,0.3); transform: scale(1); }
+  30%  { box-shadow: 0 0 40px rgba(212,175,55,0.9), 0 0 80px rgba(212,175,55,0.5); transform: scale(1.06); }
+  60%  { box-shadow: 0 0 24px rgba(212,175,55,0.6), 0 0 48px rgba(212,175,55,0.3); transform: scale(1.02); }
+  100% { box-shadow: 0 0 16px rgba(212,175,55,0.3); transform: scale(1); }
+}
+
+@keyframes coachDisappointed {
+  0%   { box-shadow: 0 0 12px rgba(239,68,68,0.2); }
+  50%  { box-shadow: 0 0 28px rgba(239,68,68,0.6), 0 0 48px rgba(239,68,68,0.3); }
+  100% { box-shadow: 0 0 12px rgba(239,68,68,0.2); }
+}
+
+@keyframes coachTeaching {
+  0%, 100% { box-shadow: 0 0 16px rgba(59,130,246,0.3), 0 0 32px rgba(59,130,246,0.15); }
+  50%       { box-shadow: 0 0 24px rgba(59,130,246,0.6), 0 0 48px rgba(59,130,246,0.3); }
+}
+
+.coach-avatar-idle       { animation: coachBreathing 3s ease-in-out infinite; }
+.coach-avatar-thinking   { animation: coachThinking 1.2s ease-in-out infinite; }
+.coach-avatar-impressed  { animation: coachImpressed 1.5s ease-out; }
+.coach-avatar-disappointed { animation: coachDisappointed 1.8s ease-in-out; }
+.coach-avatar-teaching   { animation: coachTeaching 2.5s ease-in-out infinite; }
+
+/* ── Live Reaction Overlays ──────────────────────────────────────────────── */
+
+@keyframes brilliantBurst {
+  0%   { opacity: 0; transform: scale(0.5); }
+  40%  { opacity: 1; transform: scale(1.15); }
+  70%  { transform: scale(0.97); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes blunderShake {
+  0%, 100% { transform: translateX(0); }
+  15%  { transform: translateX(-8px); }
+  30%  { transform: translateX(8px); }
+  45%  { transform: translateX(-6px); }
+  60%  { transform: translateX(6px); }
+  75%  { transform: translateX(-3px); }
+  90%  { transform: translateX(3px); }
+}
+
+@keyframes reactionSlideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.95); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes reactionFadeOut {
+  from { opacity: 1; transform: translateY(0) scale(1); }
+  to   { opacity: 0; transform: translateY(-12px) scale(0.95); }
+}
+
+@keyframes streakPop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25); }
+  70%  { transform: scale(0.95); }
+  100% { transform: scale(1); }
+}
+
+@keyframes particleBurst {
+  0%   { opacity: 1; transform: translate(0,0) scale(1); }
+  100% { opacity: 0; transform: translate(var(--dx, 30px), var(--dy, -50px)) scale(0); }
+}
+
+.reaction-enter { animation: reactionSlideUp 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.reaction-exit  { animation: reactionFadeOut 0.25s ease-in forwards; }
+.brilliant-burst { animation: brilliantBurst 0.5s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+.blunder-shake  { animation: blunderShake 0.5s ease-in-out; }
+.streak-pop     { animation: streakPop 0.4s ease-out; }
+
+/* ── Move Classification Badges ──────────────────────────────────────────── */
+
+.classification-badge { animation: fadeIn 0.15s ease-in; }
+
+.badge-brilliant { background: rgba(0,212,255,0.15); border-color: rgba(0,212,255,0.45); color: #00D4FF; }
+.badge-great     { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.45); color: #22C55E; }
+.badge-best      { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.45); color: #22C55E; }
+.badge-excellent { background: rgba(16,185,129,0.15); border-color: rgba(16,185,129,0.45); color: #10B981; }
+.badge-good      { background: rgba(110,231,183,0.15); border-color: rgba(110,231,183,0.45); color: #6EE7B7; }
+.badge-book      { background: rgba(139,92,246,0.15); border-color: rgba(139,92,246,0.45); color: #8B5CF6; }
+.badge-inaccuracy { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.45); color: #F59E0B; }
+.badge-mistake   { background: rgba(249,115,22,0.15); border-color: rgba(249,115,22,0.45); color: #F97316; }
+.badge-blunder   { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.45); color: #EF4444; }
+
+/* ── Board Effects ───────────────────────────────────────────────────────── */
+
 .board-glow {
   filter: drop-shadow(0 0 32px rgba(139, 105, 20, 0.35));
   transition: filter 0.3s ease;
@@ -68,7 +170,23 @@ body::after {
   filter: drop-shadow(0 0 48px rgba(196, 154, 42, 0.5));
 }
 
-/* Gold shimmer text */
+/* ── Glass Panel ─────────────────────────────────────────────────────────── */
+
+.glass-panel {
+  background: linear-gradient(135deg, rgba(26, 21, 16, 0.95) 0%, rgba(13, 10, 7, 0.98) 100%);
+  border: 1px solid rgba(139, 105, 20, 0.25);
+  border-radius: 12px;
+  backdrop-filter: blur(16px);
+}
+
+.inset-panel {
+  background: rgba(10, 8, 5, 0.7);
+  border: 1px solid rgba(139, 105, 20, 0.15);
+  border-radius: 8px;
+}
+
+/* ── Gold shimmer text ───────────────────────────────────────────────────── */
+
 .gold-text {
   background: linear-gradient(
     90deg,
@@ -90,21 +208,32 @@ body::after {
   100% { background-position: 200% center; }
 }
 
-/* Panel styles */
-.glass-panel {
-  background: linear-gradient(135deg, rgba(26, 21, 16, 0.95) 0%, rgba(13, 10, 7, 0.98) 100%);
-  border: 1px solid rgba(139, 105, 20, 0.25);
-  border-radius: 12px;
-  backdrop-filter: blur(12px);
+/* ── Coach Message ───────────────────────────────────────────────────────── */
+
+.coach-message-enter {
+  animation: slideInFromLeft 0.25s cubic-bezier(0.34,1.2,0.64,1);
 }
 
-.inset-panel {
-  background: rgba(10, 8, 5, 0.7);
-  border: 1px solid rgba(139, 105, 20, 0.15);
-  border-radius: 8px;
+.move-toast-enter {
+  animation: popIn 0.28s cubic-bezier(0.34,1.56,0.64,1);
 }
 
-/* Evaluation bar */
+/* ── Nav Item Hover ──────────────────────────────────────────────────────── */
+
+.nav-item {
+  transition: all 0.2s cubic-bezier(0.4,0,0.2,1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.nav-item:hover {
+  background: rgba(212,175,55,0.12) !important;
+  color: var(--accent-gold) !important;
+  transform: translateX(2px);
+}
+
+/* ── Eval Bar ────────────────────────────────────────────────────────────── */
+
 .eval-bar-container {
   width: 24px;
   border-radius: 6px;
@@ -115,15 +244,16 @@ body::after {
 
 .eval-bar-white {
   background: linear-gradient(to bottom, var(--ivory), #D4C8A8);
-  transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .eval-bar-black {
   background: linear-gradient(to bottom, #2A2016, var(--shadow));
-  transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: height 0.7s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* Analysis button */
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
 .analyze-btn {
   background: linear-gradient(135deg, var(--oak) 0%, var(--amber) 50%, var(--oak-light) 100%);
   background-size: 200% 100%;
@@ -151,28 +281,13 @@ body::after {
   transition: transform 0.4s ease;
 }
 
-.analyze-btn:hover::before {
-  transform: translateX(100%);
-}
+.analyze-btn:hover::before { transform: translateX(100%); }
+.analyze-btn:hover { background-position: 100% 0; box-shadow: 0 4px 24px rgba(212, 135, 10, 0.5); transform: translateY(-1px); }
+.analyze-btn:active { transform: translateY(0); }
+.analyze-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
 
-.analyze-btn:hover {
-  background-position: 100% 0;
-  box-shadow: 0 4px 24px rgba(212, 135, 10, 0.5);
-  transform: translateY(-1px);
-}
+/* ── Move badge ──────────────────────────────────────────────────────────── */
 
-.analyze-btn:active {
-  transform: translateY(0);
-}
-
-.analyze-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  transform: none;
-  box-shadow: none;
-}
-
-/* Move badge */
 .move-badge {
   background: linear-gradient(135deg, rgba(139, 105, 20, 0.2), rgba(196, 154, 42, 0.1));
   border: 1px solid rgba(196, 154, 42, 0.4);
@@ -184,41 +299,8 @@ body::after {
   letter-spacing: 0.08em;
 }
 
-/* Top moves list */
-.top-move-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: background 0.2s ease;
-  cursor: default;
-}
+/* ── FEN Input ───────────────────────────────────────────────────────────── */
 
-.top-move-item:hover {
-  background: rgba(139, 105, 20, 0.1);
-}
-
-.top-move-item.best {
-  background: rgba(139, 105, 20, 0.15);
-  border: 1px solid rgba(196, 154, 42, 0.25);
-}
-
-/* Loading spinner */
-.chess-spinner {
-  width: 32px;
-  height: 32px;
-  border: 3px solid rgba(139, 105, 20, 0.2);
-  border-top-color: var(--oak-light);
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* FEN input */
 .fen-input {
   width: 100%;
   background: rgba(10, 8, 5, 0.8);
@@ -237,61 +319,137 @@ body::after {
   box-shadow: 0 0 0 2px rgba(196, 154, 42, 0.1);
 }
 
-.fen-input::placeholder {
-  color: rgba(245, 240, 232, 0.25);
-}
+.fen-input::placeholder { color: rgba(245, 240, 232, 0.25); }
 
-/* Scrollbar */
-::-webkit-scrollbar { width: 6px; }
-::-webkit-scrollbar-track { background: var(--shadow); }
+/* ── Scrollbar ───────────────────────────────────────────────────────────── */
+
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
 ::-webkit-scrollbar-thumb { background: rgba(139, 105, 20, 0.4); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: rgba(196, 154, 42, 0.6); }
 
-/* Fade animations */
+/* ── Core Animations ─────────────────────────────────────────────────────── */
+
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(16px); }
-  to { opacity: 1; transform: translateY(0); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes slideInFromLeft {
+  from { transform: translateX(-12px); opacity: 0; }
+  to   { transform: translateX(0);     opacity: 1; }
+}
+@keyframes slideInFromRight {
+  from { transform: translateX(12px); opacity: 0; }
+  to   { transform: translateX(0);    opacity: 1; }
+}
+@keyframes popIn {
+  0%   { transform: scale(0.85); opacity: 0; }
+  70%  { transform: scale(1.04); }
+  100% { transform: scale(1);    opacity: 1; }
+}
+@keyframes pulseRing {
+  0%   { transform: scale(0.9); opacity: 0.7; }
+  50%  { transform: scale(1.1); opacity: 0.3; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}
+@keyframes goldGlow {
+  0%, 100% { box-shadow: 0 0 8px rgba(212,175,55,0.3); }
+  50%       { box-shadow: 0 0 20px rgba(212,175,55,0.7), 0 0 40px rgba(212,175,55,0.3); }
 }
 
-.animate-fade-up {
-  animation: fadeUp 0.4s ease forwards;
-}
+.animate-fade-up             { animation: fadeUp 0.4s ease forwards; }
+.animate-fade-up-delay-1     { animation: fadeUp 0.4s ease 0.1s forwards; opacity: 0; }
+.animate-fade-up-delay-2     { animation: fadeUp 0.4s ease 0.2s forwards; opacity: 0; }
+.animate-fade-up-delay-3     { animation: fadeUp 0.4s ease 0.3s forwards; opacity: 0; }
 
-.animate-fade-up-delay-1 { animation-delay: 0.1s; opacity: 0; }
-.animate-fade-up-delay-2 { animation-delay: 0.2s; opacity: 0; }
-.animate-fade-up-delay-3 { animation-delay: 0.3s; opacity: 0; }
-
-/* Divider */
 .gold-divider {
   height: 1px;
   background: linear-gradient(90deg, transparent, rgba(196, 154, 42, 0.4), transparent);
   margin: 16px 0;
 }
 
-@keyframes slideInFromLeft {
-  from { transform: translateX(-12px); opacity: 0; }
-  to   { transform: translateX(0);     opacity: 1; }
+/* ── Coaching Arena ──────────────────────────────────────────────────────── */
+
+.coach-arena-card {
+  background: linear-gradient(135deg, rgba(26,21,16,0.9) 0%, rgba(13,10,7,0.98) 100%);
+  border: 1px solid rgba(212,175,55,0.2);
+  border-radius: 16px;
+  backdrop-filter: blur(20px);
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
-@keyframes popIn {
-  0%   { transform: scale(0.88); opacity: 0; }
-  70%  { transform: scale(1.03); }
-  100% { transform: scale(1);    opacity: 1; }
+.coach-arena-card:hover {
+  border-color: rgba(212,175,55,0.4);
+  box-shadow: 0 8px 32px rgba(212,175,55,0.1);
 }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+/* ── Challenge Cards ─────────────────────────────────────────────────────── */
+
+.challenge-card {
+  background: linear-gradient(135deg, rgba(26,21,16,0.9) 0%, rgba(13,10,7,0.98) 100%);
+  border: 1px solid rgba(139,105,20,0.25);
+  border-radius: 14px;
+  padding: 20px;
+  transition: all 0.25s ease;
+  cursor: pointer;
 }
 
-.coach-message-enter {
-  animation: slideInFromLeft 0.22s ease-out;
+.challenge-card:hover {
+  border-color: rgba(212,175,55,0.5);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,0.4);
 }
 
-.move-toast-enter {
-  animation: popIn 0.25s ease-out;
+/* ── Streak Counter ──────────────────────────────────────────────────────── */
+
+.streak-fire {
+  animation: streakPop 0.4s ease-out, goldGlow 1.5s ease-in-out infinite;
 }
 
-.classification-badge {
-  animation: fadeIn 0.15s ease-in;
+/* ── Mobile ──────────────────────────────────────────────────────────────── */
+
+@media (max-width: 768px) {
+  .mobile-hide { display: none !important; }
+  .mobile-full { width: 100% !important; }
+  .mobile-bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    display: flex !important;
+    background: rgba(13,10,7,0.95);
+    backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(139,105,20,0.3);
+    padding: 8px 0 env(safe-area-inset-bottom, 8px);
+  }
+}
+
+/* ── Typing Indicator ────────────────────────────────────────────────────── */
+
+@keyframes typingDot {
+  0%, 60%, 100% { transform: translateY(0); opacity: 0.4; }
+  30%           { transform: translateY(-4px); opacity: 1; }
+}
+
+.typing-dot:nth-child(1) { animation: typingDot 1.2s ease-in-out infinite; }
+.typing-dot:nth-child(2) { animation: typingDot 1.2s ease-in-out 0.2s infinite; }
+.typing-dot:nth-child(3) { animation: typingDot 1.2s ease-in-out 0.4s infinite; }
+
+/* ── Glassmorphism input ─────────────────────────────────────────────────── */
+
+.glass-input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  color: var(--ivory);
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-input:focus {
+  border-color: rgba(212,175,55,0.5);
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.1);
 }
