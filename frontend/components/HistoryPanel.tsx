@@ -176,7 +176,7 @@ export default function HistoryPanel({ onClose, onLoadPosition }: Props) {
                   <>
                     <span style={{ fontSize: "0.65rem", color: "#F0F6FF" }}>♙ {g.summary.accuracy_white.toFixed(0)}%</span>
                     <span style={{ fontSize: "0.65rem", color: "#8B8B8B" }}>♟ {g.summary.accuracy_black.toFixed(0)}%</span>
-                    <span style={{ fontSize: "0.65rem", color: "#EF4444" }}>🔴 {g.summary.blunders_white + g.summary.blunders_black}</span>
+                    <span style={{ fontSize: "0.65rem", color: "#EF4444" }}>🔴 {(g.summary.blunders_white ?? 0) + (g.summary.blunders_black ?? 0)}</span>
                   </>
                 )}
               </div>
@@ -196,7 +196,7 @@ export default function HistoryPanel({ onClose, onLoadPosition }: Props) {
                 {selectedGame.summary?.opening_name ?? "Game"}
               </h3>
               <p style={{ margin: "0 0 12px", fontSize: "0.7rem", color: config.textSecondary }}>
-                {resultLabel(selectedGame.result)} · {formatDate(selectedGame.date)}
+                {resultLabel(selectedGame.result)} · {formatDate(selectedGame.date || selectedGame.created_at)}
               </p>
 
               {/* Accuracy */}
