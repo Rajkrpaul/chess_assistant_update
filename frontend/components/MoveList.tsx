@@ -37,9 +37,14 @@ export default function MoveList({ moves, selectedPly, onMoveClick, isReplayMode
   }, [selectedPly]);
 
   // Group into pairs: [[white, black?], ...]
-  const rows: [MoveAnalysis, MoveAnalysis | undefined][] = [];
-  for (let i = 0; i < moves.length; i += 2) {
-    rows.push([moves[i], moves[i + 1]]);
+  const rows: [MoveAnalysis | undefined, MoveAnalysis | undefined][] = [];
+  if (moves.length > 0) {
+    const maxPly = Math.max(...moves.map(m => m.ply));
+    for (let p = 1; p <= maxPly; p += 2) {
+      const white = moves.find(m => m.ply === p);
+      const black = moves.find(m => m.ply === p + 1);
+      rows.push([white, black]);
+    }
   }
 
   if (moves.length === 0) {
@@ -82,14 +87,18 @@ export default function MoveList({ moves, selectedPly, onMoveClick, isReplayMode
             {rowIdx + 1}.
           </span>
 
-          <button
-            ref={selectedPly === white.ply ? selectedRef : undefined}
-            onClick={(e) => onMoveClick(white, (e.currentTarget as HTMLElement).getBoundingClientRect())}
-            style={cellStyle(white.ply, white.classification)}
-          >
-            <ClassificationBadge cls={white.classification} />
-            <span>{white.move_san}</span>
-          </button>
+          {white ? (
+            <button
+              ref={selectedPly === white.ply ? selectedRef : undefined}
+              onClick={(e) => onMoveClick(white, (e.currentTarget as HTMLElement).getBoundingClientRect())}
+              style={cellStyle(white.ply, white.classification)}
+            >
+              <ClassificationBadge cls={white.classification} />
+              <span>{white.move_san}</span>
+            </button>
+          ) : (
+            <div style={{ padding: "5px 7px", fontSize: "0.8rem", color: config.textSecondary, opacity: 0.5 }}>...</div>
+          )}
 
           {black ? (
             <button
