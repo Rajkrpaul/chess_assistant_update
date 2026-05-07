@@ -2,8 +2,9 @@ import { useEffect, useRef } from "react";
 import { useGameStore } from "../store/gameStore";
 import { useCoachStore } from "../store/coachStore";
 
-const REACTION_COOLDOWN_MS = 800;
-const IMPORTANT_CLASSIFICATIONS = new Set(["Blunder", "Mistake", "Brilliant", "Great", "Best", "Excellent"]);
+// Only react to these classifications — avoid spamming for every Good/Book move
+const REACT_FOR_HUMAN = new Set(["Blunder", "Mistake", "Brilliant", "Great", "Inaccuracy"]);
+const REACTION_COOLDOWN_MS = 2000; // increased to reduce spam
 
 export function useCoachReactor() {
   const addMessage = useCoachStore((s) => s.addMessage);
@@ -15,10 +16,9 @@ export function useCoachReactor() {
     (s) => s.setLastClassificationForSuggestions
   );
   const lastFiredRef = useRef<number>(0);
-  const lastClassificationRef = useRef<string>("");
+  const lastPlySentRef = useRef<number>(-1); // track which ply we last reacted to
 
   useEffect(() => {
-    // React to player move classifications
     const unsub = useGameStore.subscribe(
       (state) => state.lastClassification,
       async (classification) => {
@@ -26,20 +26,23 @@ export function useCoachReactor() {
         const lastMove = useGameStore.getState().lastMoveEvent;
         if (!lastMove) return;
 
+        // Skip if we already sent a reaction for this exact ply
+        if (lastMove.ply === lastPlySentRef.current) return;
+
         // Debounce rapid state changes
-        if (Date.now() - lastFiredRef.current < REACTION_COOLDOWN_MS) return;
-        lastFiredRef.current = Date.now();
+        const now = Date.now();
+        if (now - lastFiredRef.current < REACTION_COOLDOWN_MS) return;
 
         const mode = useGameStore.getState().mode;
         const isHumanMove = lastMove.player === "human";
-        const isAiMove = lastMove.player === "ai";
         const cls = classification.classification;
 
+        // Always update suggestion chips
         setLastClassificationForSuggestions(cls);
 
-        // ── Human move → react
-        if (isHumanMove) {
-          // Update streak tracking
+        // ── Human move reactions (play mode only, important classifications only)
+        if (isHumanMove && mode === "play") {
+          // Update streak tracking silently for all classifications
           const positiveClasses = ["Brilliant", "Great", "Best", "Excellent", "Good", "Book"];
           if (positiveClasses.includes(cls)) {
             incrementStreak();
@@ -53,26 +56,30 @@ export function useCoachReactor() {
           else if (cls === "Inaccuracy") setCoachState("teaching");
           else setCoachState("idle");
 
-          // Skip reaction for AI or analysis non-important moves
-          if (mode === "analysis" && !IMPORTANT_CLASSIFICATIONS.has(cls)) return;
+          // Only send a chat message for important classifications
+          if (!REACT_FOR_HUMAN.has(cls)) {
+            // Good/Excellent/Best/Book are silent — don't flood the chat
+            setTimeout(() => setCoachState("idle"), 2000);
+            return;
+          }
 
-          // Choose prompt mode based on classification severity
-          let reactMode = "move_reaction";
-          if (cls === "Blunder") reactMode = "blunder_intervention";
-          else if (cls === "Brilliant") reactMode = "brilliant_celebration";
+          // Mark this ply as handled
+          lastPlySentRef.current = lastMove.ply;
+          lastFiredRef.current = now;
+
+          const reactMode = cls === "Blunder" ? "blunder_intervention"
+            : cls === "Brilliant" ? "brilliant_celebration"
+            : "move_reaction";
 
           setTyping(true);
-
-          // Check opening phase (first 10 moves)
           const plyCount = useGameStore.getState().plyCount;
-          const isOpening = plyCount <= 10;
 
           try {
             const res = await fetch("/api/coach", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                mode: isOpening && cls === "Book" ? "opening_theory" : reactMode,
+                mode: reactMode,
                 fen: lastMove.fen_before,
                 move_san: lastMove.move_san,
                 classification: cls,
@@ -88,7 +95,7 @@ export function useCoachReactor() {
               }),
             });
             const data = await res.json();
-            const reply: string = data.reply ?? "Let's continue — keep playing well.";
+            const reply: string = data.reply ?? "Keep playing — I'll comment on the key moments.";
 
             addMessage({
               type: cls === "Blunder" ? "blunder_intervention"
@@ -99,57 +106,55 @@ export function useCoachReactor() {
               classification: cls,
             });
 
-            // Reset coach state after teaching moment
             setTimeout(() => setCoachState("idle"), 5000);
           } catch {
-            addMessage({
-              type: "move_reaction",
-              sender: "coach",
-              text: "Keep playing — I'll comment on the key moments.",
-              classification: cls,
-            });
+            // Silent fail — don't add error messages to chat
             setCoachState("idle");
           } finally {
             setTyping(false);
           }
         }
 
-        // ── AI move → explain as if coach played it
-        if (isAiMove && mode === "play") {
-          // Only explain AI moves for significant moments
-          if (!IMPORTANT_CLASSIFICATIONS.has(cls) && Math.random() > 0.4) return;
+        // ── Analysis mode: only react to Blunder or Brilliant
+        if (isHumanMove && mode === "analysis" && (cls === "Blunder" || cls === "Brilliant")) {
+          if (lastMove.ply === lastPlySentRef.current) return;
+          lastPlySentRef.current = lastMove.ply;
+          lastFiredRef.current = now;
 
-          setCoachState("thinking");
+          setCoachState(cls === "Brilliant" ? "impressed" : "disappointed");
+          setTyping(true);
 
           try {
             const res = await fetch("/api/coach", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({
-                mode: "ai_move_explanation",
+                mode: cls === "Blunder" ? "blunder_intervention" : "brilliant_celebration",
+                fen: lastMove.fen_before,
                 move_san: lastMove.move_san,
-                fen: lastMove.fen_after,
+                classification: cls,
+                centipawn_loss: classification.centipawn_loss,
                 insight: classification.insight,
-                centipawn_advantage: classification.centipawn_loss
-                  ? -classification.centipawn_loss
-                  : undefined,
+                best_move_san: classification.best_move_san,
               }),
             });
             const data = await res.json();
-            const reply: string = data.reply ?? `I played ${lastMove.move_san} — keep watching.`;
-
             addMessage({
-              type: "ai_move",
+              type: cls === "Blunder" ? "blunder_intervention" : "brilliant_celebration",
               sender: "coach",
-              text: reply,
+              text: data.reply ?? "Interesting moment.",
+              classification: cls,
             });
-
-            setCoachState("idle");
+            setTimeout(() => setCoachState("idle"), 5000);
           } catch {
-            // Silent fail for AI move commentary
             setCoachState("idle");
+          } finally {
+            setTyping(false);
           }
         }
+
+        // AI move commentary is intentionally disabled to prevent chat flooding
+        // The coach reacts to what matters: human mistakes and brilliancies
       }
     );
 

@@ -300,11 +300,39 @@ export default function ChessAssistant() {
   );
 
   const sortedMoveHistory = useMemo(() => [...moveHistory].sort((a,b) => a.ply - b.ply), [moveHistory]);
+
+  // Build a "live" move list that shows moves immediately (from sanHistory)
+  // and gets upgraded with classification data as backend analysis completes.
+  const liveMoveList = useMemo(() => {
+    const analyzed = new Map(sortedMoveHistory.map(m => [m.ply, m]));
+    return sanHistory.map((san, idx) => {
+      const ply = idx + 1;
+      if (analyzed.has(ply)) return analyzed.get(ply)!;
+      // Pending move: shown immediately, no classification yet
+      return {
+        move_uci: san,
+        move_san: san,
+        ply,
+        classification: "Good" as const,
+        eval_before: null,
+        eval_after: null,
+        centipawn_loss: 0,
+        best_move_uci: "",
+        best_move_san: "",
+        pv_line: [] as string[],
+        insight: "Analysis in progress…",
+        is_book: false,
+        is_brilliant: false,
+      };
+    });
+  }, [sanHistory, sortedMoveHistory]);
+
   const isLoading = useGameStore(s => s.isEngineRunning);
   const showArrows = settings.showBestMoveArrows && ((mode === "play" && stockfishAssist) || mode === "analysis");
 
   const insights = useMemo(() => {
     const counts = { Best:0, Excellent:0, Good:0, Inaccuracy:0, Mistake:0, Blunder:0 };
+    // Only count fully-analyzed moves for accurate classification stats
     sortedMoveHistory.forEach(m => {
       if (["Brilliant","Great","Book"].includes(m.classification)) counts.Best++;
       else if (m.classification in counts) (counts as any)[m.classification]++;
@@ -509,7 +537,7 @@ export default function ChessAssistant() {
             {/* Move Insights */}
             <div style={{ background:config.glassBg, border:`1px solid ${config.glassBorder}`, borderRadius:"10px", padding:"16px" }}>
               <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:"12px" }}>
-                <span style={{ fontSize:"0.8rem", fontWeight:600 }}>♞ Move Insights ({sortedMoveHistory.length})</span>
+                <span style={{ fontSize:"0.8rem", fontWeight:600 }}>♞ Move Insights ({liveMoveList.length})</span>
                 <button onClick={() => setShowReport(true)} style={{ fontSize:"0.65rem", color:config.accentPrimary, background:"transparent", border:"none", cursor:"pointer" }}>View Analysis →</button>
               </div>
               <div style={{ display:"flex", flexDirection:"column", gap:"8px" }}>
@@ -532,10 +560,10 @@ export default function ChessAssistant() {
             </div>
 
             {/* Move List */}
-            <div style={{ background:config.glassBg, border:`1px solid ${config.glassBorder}`, borderRadius:"10px", padding:"12px", maxHeight:"200px", overflowY:"auto" }}>
-              <div style={{ fontSize:"0.8rem", fontWeight:600, marginBottom:"8px" }}>📋 Move History</div>
+            <div style={{ background:config.glassBg, border:`1px solid ${config.glassBorder}`, borderRadius:"10px", padding:"12px", maxHeight:"220px", overflowY:"auto" }}>
+              <div style={{ fontSize:"0.8rem", fontWeight:600, marginBottom:"8px" }}>📋 Move History ({liveMoveList.length})</div>
               <MoveList
-                moves={sortedMoveHistory}
+                moves={liveMoveList}
                 selectedPly={replayPly}
                 onMoveClick={(move, rect) => { setInsightMove(move); setInsightRect(rect); setReplayPly(move.ply); }}
               />
